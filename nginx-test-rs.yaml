@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: ReplicaSet
+metadata:
+  labels:
+    app: nginx-rs      
+  name: nginx-rs
+spec:
+  replicas: 3
+  selector: 
+    matchLabels:
+      app: nginx-rs
+  template:
+    metadata:
+      labels: 
+        app: nginx-rs
+    spec: 
+      containers: 
+      - name: nginx 
+        image: nginx 
+---
+apiVersion: v1
+kind: Services
+metadata:
+  name: nginx-rs-services
+spec:
+  selector: 
+    app: nginx-rs
+   type: NodePort
+   ports:
+   - protocol: TCP
+     port: 81      
+                       
+
+
+
