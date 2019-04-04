@@ -1,0 +1,4 @@
+echo -n 'mysql-credential' | base64
+YWRtaW4=
+echo -n 'MySecureP@ss' | base64
+MWYyZDFlMmU2N2Rm
