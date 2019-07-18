@@ -1,31 +1,21 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mysql-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: standard
-  resources:
-    requests:
-      storage: 10Gi
-
----
 apiVersion: extensions/v1beta1
 kind: ReplicaSet
 metadata:
-  name: mysql-rs-secret
+  name: mysql
   labels:
-    app: mysql-rs-secret
+    app: wordpress
+    tier: mysql
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mysql-rs-secret-pod
+      app: wordpress
+      tier: mysql
   template:
     metadata:
       labels:
-        app: mysql-rs-secret-pod
+        app: wordpress
+        tier: mysql
     spec:
       containers:
       - name: mysql
@@ -34,27 +24,46 @@ spec:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mysql-pass
+              name: mysecret
               key: password
         livenessProbe:
           tcpSocket:
             port: 3306
         ports:
         - containerPort: 3306
+        volumeMounts:
+        - name: mysql-pvc
+          mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-pvc
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  labels:
+    name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  name: mysql
   labels:
-    app: mysql-wp
-  name: mysql-wp
+    app: wordpress
 spec:
   ports:
-  - port: 3306
-    protocol: TCP
-    targetPort: 3306
+    - port: 3306
   selector:
-    app: mysql
-  sessionAffinity: None
-  type: ClusterIP
+    app: wordpress
+    tier: mysql
+  clusterIP: None
